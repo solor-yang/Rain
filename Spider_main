@@ -1,44 +1,43 @@
-# -*- coding: utf-8 -*-
-'''
-Created on 2018��4��27��
+# -*- coding: UTF-8 -*-
 
-@author: YG
-'''
-#import urllib.parse
+from baike_spider import url_manager, html_parser, html_downloader,\
+    html_outputer
 
-class HtmlOutputer(object):
+
+
+class SpiderMain(object):#总调用程序和入口程序
     def __init__(self):
-        self.datas = []
-    
-    
-    def collect_data(self, data):
-        if data is None:
-            return
-        self.datas.append(data)
+        self.urls = url_manager.UrlManager()    #url管理器
+        self.downloader = html_downloader.HtmlDownloader()   #html下载器
+        self.parser = html_parser.HtmlParser()  #html解析器
+        self.outputer = html_outputer.HtmlOutputer()    #html网页输出器
         
-    def output_html(self):
-        fout = open('output.html', 'w', encoding = 'utf-8')
-        
-        fout.write("<html>")
-        fout.write("<body>")
-        fout.write("<table>")
-        
-        # ascii
-        for data in self.datas:
-            fout.write("<tr>")
-            fout.write("<td>%s</td>" % data['url'])
-            fout.write("<td>%s</td>" % data['title'])
-            fout.write("<td>%s</td>" % data['summary'])
-            fout.write("</tr>" )
-        
-        fout.write("<table>")
-        fout.write("<body>")
-        fout.write("<html>")
-        
-        fout.close()
-    
-    
+    def craw(self, root_url):
+        count = 1   #记录当前爬去第count个url
+        #当有新的url时
+        self.urls.add_new_url(root_url)
+        while self.urls.has_new_url():
+            try:
+                new_url = self.urls.get_new_url()   #从urls获取新的url
+                print('craw %d : %s'%(count, new_url))
+                html_cont = self.downloader.download(new_url)#下载url页面
+                new_urls, new_data = self.parser.parse(new_url, html_cont)#解析下载页面
+                self.urls.add_new_urls(new_urls)#添加批量url
+                self.outputer.collect_data(new_data)#收集新的数据
+                
+                #修改这个值，可以控制爬去网页的数量
+                if count == 10:
+                    break
+                count = count + 1
+            except :
+                    print('craw failed')
+                    
+        self.outputer.output_html()#输出收集好的数据    
     
 
-
-
+if __name__ == "__main__":
+        #入口url
+        root_url = "https://baike.baidu.com/item/Python/407313"
+        obj_spider = SpiderMain()
+        obj_spider.craw(root_url)
+        
