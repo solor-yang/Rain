@@ -8,3 +8,4 @@ python的简单爬虫开发历程（根据IMOOC提供视频资源）
 （3）网页下载器，urllib2
 （4）网页解析器，BeautifulSoup
 （5）实战编写爬取百度百科页面
+任务：爬取 百度百科“python”的相关链接
